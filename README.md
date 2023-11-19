@@ -28,11 +28,11 @@ simple user control over the output for new database entries in SQL format.
 
 
 
-## Commandline Tool and create environment using conda (for pip use instructions below), additionally install gmt
+## Commandline Tool and create environment using conda (for pip use instructions below)
 
 ```
-conda create --name <env> --file specfile.txt
-sudo apt-get install gmt gmt-dcw gmt-gshhg
+conda create --name <env> python=3.9
+pip install -r requirements.txt
 python processor.py
 
     usage:  python processor.py [-help] -c coordinate 
