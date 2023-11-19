@@ -65,12 +65,12 @@ Using [PyInstaller](http://www.pyinstaller.org) is recommended. You should first
 
 ```
 conda config --prepend channels conda-forge
-conda create --name SpartMapper  python=3.9 pip numpy pandas xarray netcdf4 packaging gmt pygmt geopandas
-conda activate SpartMapper
-pip install chardet pdf2image pykml pyqt5 turfpy vincenty
-git clone https://github.com/iTaxoTools/spartmapper2.git
-cd spartmapper2
-pyinstaller spartmapper.spec
+conda create --name ccs_find  python=3.9
+pip install polars XlsxWriter xlrd numpy pandas pyarrow PyQt5 molmass matplotlib plotly lxml bokeh biosaur2 scipy
+conda activate ccs_find
+git clone https://github.com/sangeeta97/ccs_find.git
+cd ccs_find
+pyinstaller ccs.spec
 
 ```
 
