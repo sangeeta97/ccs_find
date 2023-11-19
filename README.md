@@ -35,28 +35,13 @@ conda create --name <env> python=3.9
 pip install -r requirements.txt
 python processor.py
 
-    usage:  python processor.py [-help] -c coordinate 
-    -o OUTPUT 
-    [-l spart or spartxml file] 
-    -i {.shp,tab,xml} 
-    -e {xml,spart,not_applicable}
-    [-x delimitation method name in spartfile]
+    usage:  python processor.py [-help] 
     [-g config.ini, this file has all parameter to run the analysis, can be changed as per analysis criteria]
 
-    positional arguments if config.ini file is not available:
-      coordinatefile        the input file having lat, lon, specimen_voucher information
-      input1                the input file type containing coordinate information
-      input2                the input file type having species mapping information
-      output                path to the empty folder to store the output result files
-
-    optional arguments:
+     optional arguments:
       -h, --help            show this help message and exit
       --cmd                 activates the command-line interface
       -g                   config.ini file with all the options (refer to config.ini file)
-      --x delimitation method name in spartfile
-                            species delimitation method used for species classification (optional)
-      --l spart or spartxml file
-                            Input a xml or txt file having species mapping to specimen voucher (optional)
 
 ```
 ## Generating an executable
