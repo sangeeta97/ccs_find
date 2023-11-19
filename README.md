@@ -1,5 +1,5 @@
 # ccs_find
-The most recent and up-to date on Nov 2023
+The most recent and up-to date (Nov 2023).
 We introduce CCSfind, a new tool for building of comprehensive databases from experimental IM-MS measurements of small molecules. 
 CCSfind allows predicted ion species to be chosen for input chemical formulae.
 The tool uses a mzML input files to provide a unified set of results within a single data processing step which includes filtering using isotopic confirmation after peak picking.
@@ -15,8 +15,6 @@ simple user control over the output for new database entries in SQL format.
 * The nature of gas
 * The primary ion for screening (either positive or negative primary ion)
 
-* Here is the information on the kml syntax which is a kind of xml:
-* https://en.wikipedia.org/wiki/Keyhole_Markup_Language
 
 
 # Optional or additional inputs
@@ -37,11 +35,6 @@ conda create --name <env> --file specfile.txt
 sudo apt-get install gmt gmt-dcw gmt-gshhg
 python processor.py
 
-```
-
-```
-
-## Usage
     usage:  python processor.py [-help] -c coordinate 
     -o OUTPUT 
     [-l spart or spartxml file] 
