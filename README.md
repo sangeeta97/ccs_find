@@ -58,9 +58,11 @@ python processor.py
       --l spart or spartxml file
                             Input a xml or txt file having species mapping to specimen voucher (optional)
 
-
+```
 ## Generating an executable
-Using [PyInstaller](http://www.pyinstaller.org) is recommended. You should first clone the repository and install spartmapper2 with all dependencies 
+Using [PyInstaller](http://www.pyinstaller.org) is recommended. You should first clone the repository and install all dependencies.
+
+
 ```
 conda config --prepend channels conda-forge
 conda create --name SpartMapper  python=3.9 pip numpy pandas xarray netcdf4 packaging gmt pygmt geopandas
