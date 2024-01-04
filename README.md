@@ -1,5 +1,5 @@
 # ccs_find
-The most recent and up-to date (Nov 2023).
+The most recent and up-to date (Jan 2024).
 We introduce CCSfind, a new tool for building of comprehensive databases from experimental IM-MS measurements of small molecules. 
 CCSfind allows predicted ion species to be chosen for input chemical formulae.
 The tool uses a mzML input files to provide a unified set of results within a single data processing step which includes filtering using isotopic confirmation after peak picking.
