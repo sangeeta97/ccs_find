@@ -6,32 +6,8 @@ from .utils import timeit, timeit1
 
 
 
-parameters = {"abundance_combobox": 17, "c13_combobox": 30, "mono_combobox": 20}
+parameters = {"abundance_combobox": 17, "c13_combobox": 20, "mono_combobox": 20}
 
-
-
-#making c12 as mono 100% and then calculate the c13 as pertage should be idearlly, and then subtract and then calculate the percentage of that difference.
-
-
-#The primary data dict contains keys for all the primary analysis, keys are
-#primary_ion
-#drift_gas
-#formula
-#mzml
-#calibration
-#beta
-#tfix
-#buffer_text
-
-
-#The secondary data dict contains keys for all the advanced settings.
-
-#checked_ions
-#positive_mass
-#negative_mass
-#mono_combobox
-#c13_combobox
-#abundance_combobox
 
 class Final:
 
@@ -69,6 +45,33 @@ class Final:
             self.ccs_df = ccs.CCS(self, df9)
             df22 = self.ccs_df.finish_analysis()
             return df22
+
+
+    @timeit1
+    def run_commandline(self):
+        self.ppm_values = self.secondary_data["ppm_values"]
+        self.ppm_values = [float(x) for x in self.ppm_values]
+        if bool(self.secondary_data.get("checked_ions", 0)):
+            self.ion_species = True
+            keys_to_search = set(self.secondary_data["checked_ions"])
+            mass_set = set(list(self.mass_values.keys()))
+            function_set = set(list(self.function_values.keys()))
+            mass_set = mass_set.intersection(keys_to_search)
+            self.mass_values= {k: self.mass_values[k] for k in mass_set}
+            function_set = function_set.intersection(keys_to_search)
+            self.function_values= {k: self.function_values[k] for k in function_set}
+        from .formula import Molecular_Formula
+        self.formula_df = Molecular_Formula(self)
+        self.ions, self.isotope_ratio = self.formula_df.run()
+        from .drift_time import Parse_MF
+        self.drift_time_df = Parse_MF(self)
+        df9 = self.drift_time_df.dataframe_all()
+        if "Alert" in self.message.keys():
+            return None
+        from .ccs import CCS
+        self.ccs_df = ccs.CCS(self, df9)
+        df22 = self.ccs_df.finish_analysis()
+        return df22
 
 
 

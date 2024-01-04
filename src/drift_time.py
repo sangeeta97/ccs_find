@@ -16,7 +16,7 @@ from functools import wraps
 import time
 import matplotlib.pyplot as plt
 from scipy.signal import peak_widths
-from .isotopic_confirm import Xic_Eic
+from .plots import Xic_Eic
 import numpy as np
 import plotly.express as px
 from .utils import *
@@ -189,6 +189,10 @@ class Parse_MF:
     @timeit
     def run_all(self):
         if self.data.primary_data['use_data'] != "yes":
+            self.mzmldata["mzml"] = None
+            import gc
+            gc.enable()
+            gc.collect()
             spectra_generator = MS1OnlyMzML(self.data.primary_data["mzml"])
             ps = list(next(spectra_generator).keys())
             ds = (s for s in spectra_generator)

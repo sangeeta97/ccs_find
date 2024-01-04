@@ -38,7 +38,7 @@ def condition_max(target, ppm):
 
 
 
-def valid_rt(target, query_df, test_case, PPM2, PPM1, ion):
+def valid_rt(target, query_df, test_case, PPM2, PPM1):
     target1 = test_case['mz'].values[0]
     target2 = test_case['mz'].values[1]
     target3 = test_case['mz'].values[2]
@@ -94,6 +94,9 @@ def valid_rt(target, query_df, test_case, PPM2, PPM1, ion):
 
 
 def spectrum_confirm(molecular_formula, pp, target, peak_dataframe, test_case, PPM1, PPM2, noise, ion, peakwidth, temp):
+    '''The function test the isotopic match with theoretical for primary ions and it is only doing isotopic match but
+       but for adduct ions+ primary ions the plots of summed spectra along rt and intensity values were created. ion is None for primary match.
+    '''
     bool_rt = {}
     peakwidth = float(peakwidth)
     pp = np.array(pp)
@@ -102,13 +105,25 @@ def spectrum_confirm(molecular_formula, pp, target, peak_dataframe, test_case, P
         p_min = float(p) - peakwidth
         p_max = float(p) + peakwidth
         query_df = peak_dataframe.filter((pl.col("rt") >= p_min) & (pl.col("rt") <= p_max))
-        ratio_bool, mz1, intensity1, mz2, intensity2, query_df = valid_rt(target, query_df, test_case, PPM2, PPM1, ion)
+        ratio_bool, mz1, intensity1, mz2, intensity2, query_df = valid_rt(target, query_df, test_case, PPM2, PPM1)
         if ratio_bool:
-            gg = iso_pat.Isotope_Plot(query_df, test_case, ion, p, molecular_formula, temp, target)
-            gg.process_all()
-            mz = gg.mzlist
-            bool_rt[p] = "yes"
+            if ion:
+                value_tuple = plot_isotopes(query_df, test_case, ion, p, molecular_formula, temp, target)
+                bool_rt[p] = "yes"
+                return bool_rt, value_tuple
+            else:
+                bool_rt[p] = "yes"
+
         else:
-            bool_rt[p] = "no"
-            mz = np.array([])
-    return bool_rt, mz
+             bool_rt[p] = "no"
+
+    return bool_rt, None
+
+
+def plot_isotopes(query_df, test_case, ion, p, molecular_formula, temp, target):
+    gg = iso_pat.Isotope_Plot(query_df, test_case, ion, p, molecular_formula, temp, target)
+    gg.process_all()
+    mz = gg.mzlist
+    rt = gg.rtlist
+    intensity = gg.intensitylist
+    return mz, rt, intensity

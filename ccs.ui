@@ -21,7 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="photo.qrc">
-    <normaloff>:/icon/icon/ccs.jpg</normaloff>:/icon/icon/ccs.jpg</iconset>
+    <normaloff>:/icon/icon/ccs_logo.ico</normaloff>:/icon/icon/ccs_logo.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -134,7 +134,7 @@ file (optional)</string>
         <item row="0" column="1">
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -1192,8 +1192,8 @@ IM</string>
            </widget>
            <widget class="QToolButton" name="distribution">
             <property name="text">
-             <string>MS 
- comparison</string>
+             <string>Review 
+ Isotopologues</string>
             </property>
             <property name="icon">
              <iconset resource="photo.qrc">

@@ -61,6 +61,8 @@ class Isotope_Plot(object):
         self.temp = temp
         self.target = target
         self.mzlist = None
+        self.rtlist = None
+        self.intensitylist = None
 
 
     def process_all(self):
@@ -192,6 +194,8 @@ class Isotope_Plot(object):
         if len(ll) == 3:
             a, b, c = ll
             self.mzlist = b.mz.values
+            self.rtlist = b.rt.values
+            self.intensitylist = b.intensity.values
             t1, t2, t3 = list(self.theoretical_ratio)
             m1, m2, m3 = list(self.theoretical_masses)
             df = ll[0]

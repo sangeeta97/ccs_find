@@ -18,8 +18,12 @@ from scipy.signal import peak_widths
 import numpy as np
 import plotly.express as px
 import polars as pl
+from scipy.signal import savgol_filter
 
 
+def filter(xx):
+    xx = np.array(xx)
+    return savgol_filter(xx, 5, 2, mode='nearest')
 
 
 
@@ -87,6 +91,7 @@ def detect_rt(mm, thresold):
     pp= pp[['rt', 'intensity']].groupby('rt')['intensity'].apply(max)
     rt= np.array(pp.index.values)
     intensity= pp.values
+    intensity = filter(intensity)
     noise = estimate_noise(intensity)
     baseline = estimate_baseline(intensity, noise)
     start, peaks, end = detect_peaks(intensity, noise, baseline, thresold)
@@ -115,91 +120,6 @@ def extract_decorator22(spectrum, noise):
         li = [mz, intensity, gg, round(spectrum.scan_time_in_minutes(), 3)]
         mm = whole._make(li)
         return mm
-
-
-@timeit
-def spectrum_confirm(spec_index, molecular_formula, target, spec_list, test_case, PPM1, PPM2, noise):
-    n = spec_index.size
-    spec_index = np.unique(spec_index)
-    target1 = target
-    target2 = target1 + 1.00335
-    mz1 = []
-    mz2 = []
-    intensity_ratio = []
-    for spec in spec_list[spec_index]:
-        ff= extract_decorator22(spec, noise)
-        condition = np.absolute(ff.mz- target1) < PPM1/1000000 * target1
-        result_mz1 = np.extract(condition, ff.mz)
-        result_intensity1 = np.extract(condition, ff.intensity)
-        condition = np.absolute(ff.mz- target2) < PPM2/1000000 * target2
-        result_mz2 = np.extract(condition, ff.mz)
-        result_intensity2 = np.extract(condition, ff.intensity)
-        if result_intensity2.size > 0:
-            intensity_r = result_intensity2[0]/result_intensity1[0] * 100
-            mz1.append(result_mz1[0])
-            mz2.append(result_mz2[0])
-            intensity_ratio.append(intensity_r)
-
-        else:
-            intensity_r = np.array([200])
-            intensity_ratio.append(intensity_r)
-    test_case = test_case['intensity'].values[1]
-    test_case = float(test_case)
-    intensity_ratio = np.array(intensity_ratio)
-    kd = np.absolute(intensity_ratio - test_case)
-    kd = np.ravel(kd)
-    dk = kd < test_case/1
-    dk = np.ravel(dk)
-    ratio_bool = dk
-    intensity_ratio = np.ravel(intensity_ratio)
-    final_ratio = intensity_ratio[ratio_bool]
-    final_ratio = np.ravel(final_ratio)
-    if np.any(final_ratio):
-        return ratio_bool, np.array([])
-    else:
-        return np.array([]), np.array([])
-
-
-
-
-def spectrum_confirm_ion(spec_index, ion_type, rt, spec_list, target, test_case, isotope_match, PPM1, PPM2, x, noise):
-    try:
-        spec_index = np.array(spec_index)
-        spec_index = spec_index.flatten()
-        spec_peaks = spec_list[spec_index]
-        spec = np.ravel(spec_peaks)
-        target1 = target
-        # target1 = self.ion_dict[ion_type]
-        target2 = target1 + 1.00335
-        ff= extract_decorator22(spec[0], noise)
-        condition = np.absolute(ff.mz- target1) < PPM1/1000000 * target1
-        result_mz1 = np.extract(condition, ff.mz)
-        result_intensity1 = np.extract(condition, ff.intensity)
-        condition = np.absolute(ff.mz- target2) < PPM2/1000000 * target2
-        result_mz2 = np.extract(condition, ff.mz)
-        result_intensity2 = np.extract(condition, ff.intensity)
-        intensity_r = result_intensity2[0]/result_intensity1[0] * 100
-        intensity_ratio = np.array(intensity_r)
-        # test_case = self.isotope[self.molecular_formula]
-        test_case = test_case['intensity'].values[1]
-        test_case = float(test_case)
-        kd = np.absolute(intensity_ratio - test_case)
-        kd = np.ravel(kd)
-        dk = kd < test_case/1.5
-        dk = np.ravel(dk)
-        ratio_bool = dk
-        intensity_ratio = np.ravel(intensity_ratio)
-        final_ratio = np.extract(ratio_bool, intensity_ratio)
-        if np.any(final_ratio):
-            label = f"{x}_{ion_type}_{rt}"
-            isotope_match[label]['mz'] = np.ravel(np.array([result_mz1[0], result_mz2[0]]))
-            isotope_match[label]['intensity'] = np.ravel(np.array([result_intensity1[0], result_intensity2[0]]))
-            return ratio_bool, np.array([])
-        else:
-            return np.array([]), np.array([])
-    except Exception as e:
-        return np.array([]), np.array([])
-
 
 
 

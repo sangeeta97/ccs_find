@@ -16,7 +16,7 @@ from functools import wraps
 import time
 import matplotlib.pyplot as plt
 from scipy.signal import peak_widths
-from .isotopic_confirm import Xic_Eic
+from .plots import Xic_Eic
 import numpy as np
 import plotly.express as px
 from .utils import *
@@ -24,6 +24,14 @@ import pandas as pd
 from . import sum_frames
 from molmass import Formula
 import polars as pl
+from scipy.signal import savgol_filter
+
+
+def filter(xx):
+    xx = np.array(xx)
+    return savgol_filter(xx, 5, 2, mode='nearest')
+
+
 
 
 
@@ -70,7 +78,7 @@ class Calculation:
         self.all_dt = self.data.all_dt
         self.mzmldata = self.data.mzmldata
         self.peakwidth = self.data.peakwidth
-        self.experimental_isotope = self.data.experimental_isotope
+        # self.experimental_isotope = self.data.experimental_isotope
 
 
 
@@ -91,12 +99,12 @@ class Calculation:
             if peak:
                 target = self.ion_dict[self.molecular_formula]
                 test_case = self.selected_ions[self.data.primary_ion]
-                bool_rt, mz = sum_frames.spectrum_confirm(self.molecular_formula, pp, target, self.mzmldata["mzml"], test_case, self.PPM1, self.PPM2, self.noise, self.primary_ion, self.peakwidth, self.temp_spectrum)
+                bool_rt, _ = sum_frames.spectrum_confirm(self.molecular_formula, pp, target, self.mzmldata["mzml"], test_case, self.PPM1, self.PPM2, self.noise, None, self.peakwidth, self.temp_spectrum)
                 final_rt = [x for x in bool_rt.keys() if bool_rt[x] != "no"]
                 final_isotope = [bool_rt[x] for x in final_rt]
                 if len(final_rt) > 0:
-                    for i, y in zip(final_rt, final_isotope):
-                        self.experimental_isotope[self.molecular_formula][i].append(y)
+                    # for i, y in zip(final_rt, final_isotope):
+                    #     self.experimental_isotope[self.molecular_formula][i].append(y)
                     final_rt = np.array(final_rt)
                     if final_rt.size > 0:
                         self.data.changing['status'] = True
@@ -127,38 +135,52 @@ class Calculation:
         ion_dict = self.mass_df[self.molecular_formula]
         ion_dict = {i:j for i, j in zip(list(ion_dict.index), ion_dict.values)}
         pp = self.found_molecular_formula[self.molecular_formula]
+        print("printing pp")
+        print(pp)
         self.rt = pp
         rt_range_min = pp - float(self.peakwidth)
 
         rt_range_max = pp + float(self.peakwidth)
-
         for ion in mass_all.keys():
             mm = mass_all[ion]
             lc = []
             for i in range(len(pp)):
                 ll= mm.filter((pl.col('rt') >= rt_range_min[i]) & (pl.col('rt') <= rt_range_max[i]))
                 ll = ll.collect().to_pandas()
-                if ll.index.size > 5:
-                    lt = ll[['index' ,'drift_time', 'intensity', 'mz', 'rt', 'theoretical_mass']].sort_values(by = ['intensity'], ascending = False).drop_duplicates(subset = ['drift_time'], keep = "first")
-                    spec_index = lt['index'].values[0]
-                    num = 5 if ion == self.primary_ion else 2
-                    target = ion_dict[ion]
-                    test_case = self.selected_ions[ion]
-                    bool_rt, mz = sum_frames.spectrum_confirm(self.molecular_formula, pp[i], target, self.mzmldata["mzml"], test_case, self.PPM1, self.PPM2, self.noise, ion, self.peakwidth, self.temp_spectrum)
-                    final_rt = [x for x in bool_rt if bool_rt[x] != "no"]
-                    final_isotope = [bool_rt[x] for x in final_rt]
-                    for x, y in zip(final_rt, final_isotope):
-                        self.experimental_isotope[self.molecular_formula][x].append(y)
-                    final_rt = np.array(final_rt)
-                    if final_rt.size > 0:
-                        rt = pp[i]
-                        label = self.molecular_formula + str(rt)
-                        self.ions_data[label][ion] = lt
-                        df = self.peak_dt(lt, ion, rt, mz)
-                        if self.peaks:
-                            label = self.molecular_formula + str(rt)
-                            self.rt_found_ion[label].append(ion)
-                            lc.append(df)
+                if not ll.index.size > 5:
+                    continue
+                lt = ll[['index' ,'drift_time', 'intensity', 'mz', 'rt', 'theoretical_mass']].sort_values(by = ['intensity'], ascending = False).drop_duplicates(subset = ['drift_time'], keep = "first")
+                spec_index = lt['index'].values[0]
+                target = ion_dict[ion]
+                test_case = self.selected_ions[ion]
+                bool_rt, mz_tuple = sum_frames.spectrum_confirm(self.molecular_formula, pp[i], target, self.mzmldata["mzml"], test_case, self.PPM1, self.PPM2, self.noise, ion, self.peakwidth, self.temp_spectrum)
+                final_rt = [x for x in bool_rt if bool_rt[x] != "no"]
+                final_rt = np.array(final_rt)
+                if final_rt.size > 0:
+
+                    ''' Stored rt value of primary ion used as reference (fixed value) the dataframe for the plotting for all the adduction ions as well, as adduct ions might have other rt values as well'''
+                    rtE = pp[i]
+                    mz = mz_tuple[0]
+                    rt = mz_tuple[1]
+                    intensity = mz_tuple[2]
+                    noise = estimate_noise(intensity)
+                    baseline = estimate_baseline(intensity, noise)
+                    start, peaks, end = detect_peaks(intensity, noise, baseline, self.noise)
+                    peak_intensities  = np.array([intensity[x] for x in peaks])
+                    max_intensity = max(peak_intensities)
+                    peaks_index = peak_intensities > max_intensity/3
+                    peaks = peaks[peaks_index]
+                    start = start[peaks_index]
+                    end = end[peaks_index]
+                    rt = rt[peaks]
+                    label = self.molecular_formula + str(rtE)
+                    self.ions_data[label][ion] = lt
+                    df = self.peak_dt(lt, ion, rt, mz, rtE)
+                    if self.peaks:
+                        label = self.molecular_formula + str(rtE)
+                        self.rt_found_ion[label].append(ion)
+                        lc.append(df)
+
             if len(lc) > 0:
                 dd = pd.DataFrame()
                 lc.append(dd)
@@ -168,15 +190,15 @@ class Calculation:
 
 
 
-    def peak_dt(self, df, z, i, mz1):
+    def peak_dt(self, df, z, i, mz1, rtE):
         '''peak picking using dt dimesion and summarizing information about each ion in the table
         '''
         ll = df.sort_values(by=['drift_time'])
         xnew = ll['drift_time'].values
         ynew = ll['intensity'].values
+        ynew = filter(ynew)
         mz = ll['mz'].values
         spec = ll['index'].values
-        rt = ll['rt'].values
         theoretical_mass = ll['theoretical_mass'].values
         noise = estimate_noise(ynew)
         baseline = estimate_baseline(ynew, noise)
@@ -186,21 +208,22 @@ class Calculation:
             self.peaks = True
             peak_intensities  = np.array([ynew[x] for x in peaks])
             max_intensity = max(peak_intensities)
+            peaks_index = peak_intensities > max_intensity/5
+            peaks = peaks[peaks_index]
+            start = start[peaks_index]
+            end = end[peaks_index]
             max_index = np.argmax(ynew)
             if mz1.size > 0:
                 mz_mid = np.median(mz1)
             else:
                 mz_mid = np.median(mz)
-            peaks_index = peak_intensities > max_intensity/20
-            peaks = peaks[peaks_index]
-            start = start[peaks_index]
-            end = end[peaks_index]
             end = end - 1
             peak_mid = xnew[peaks]
             peak_mid = peak_mid.round(3)
             spec_number = spec[peaks]
-            rt_mid = rt[peaks]
+            rt_mid = np.resize(i, (len(peaks), 1))
             rt_mid = rt_mid.round(3)
+            rt_mid = rt_mid.flatten()
             intensity_mid = ynew[peaks]
             intensity_mid = intensity_mid.round(3)
             half_max = intensity_mid * 0.5
@@ -210,8 +233,7 @@ class Calculation:
             fwhm = find_fwhm(half_max, start, end, xnew, ynew)
             dict_all = {"mz_top": mz_mid, "peak_start": peak_start, "peak_end": peak_end, "dt_mid": peak_mid, "fwhm": fwhm, "spec_number": spec_number, "rt_mid": rt_mid, "theoretical_mass": theoretical_mass}
             df = pd.DataFrame(data = dict_all)
-            df['rt'] = i
-            self.dt_peaks[z][i] = df
+            self.dt_peaks[z][i[0]] = df
             df['number of conformers'] = df['dt_mid'].size
             df['Error(PPM)'] = np.subtract(df['mz_top'].values, df['theoretical_mass'].values)
             df['Error(PPM)'] = np.divide(df['Error(PPM)'].values, df['theoretical_mass'].values)
@@ -220,6 +242,7 @@ class Calculation:
             fwhm = [x if x > 0 else 1 for x in fwhm]
             fwhm = np.array(fwhm)
             df['resolving_power'] = np.divide(peak_mid, fwhm)
+            df["rt"] = rtE
             df['resolving_power'] = df['resolving_power'].map(lambda x: round(x, 2))
             final_result = df[["mz_top", "Error(PPM)", "number of conformers", "dt_mid", "fwhm", "rt_mid", "resolving_power", "rt"]]
             final_result.columns = ["mz_measured", "Error(PPM)", "#conformer", "drift_time", "fwhm", "retention_time", "resolving_power", "rt"]

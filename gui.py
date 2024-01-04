@@ -128,7 +128,7 @@ class MainApp(QMainWindow , ui):
         #
         reg_ex = QRegExp("[A-Z][a-z]?\d*|\(.*?\)\d+")
         input_validator = QRegExpValidator(reg_ex, self.formula)
-        self.primary_data = {"primary_ion": "", "drift_gas": "Nitrogen", "mzml": "", "beta": "", "tfix": "", "buffer_text": "", "chargestate": '', "ion_intensity": '', 'use_data': ''}
+        self.primary_data = {"primary_ion": "", "drift_gas": "", "mzml": "", "beta": "", "tfix": "", "buffer_text": "", "chargestate": '', "ion_intensity": '', 'use_data': ''}
         self.optional_data = defaultdict(lambda: None)
         self.secondary_data = defaultdict(list)
         self.message = defaultdict(list)
@@ -209,6 +209,7 @@ class MainApp(QMainWindow , ui):
         beta = self.beta.text()
         self.primary_data["tfix"] = tfix
         self.primary_data["beta"] = beta
+
 
 
     def mass_added(self, b):
@@ -369,6 +370,9 @@ class MainApp(QMainWindow , ui):
 
 
     async def find_ccs(self):
+            import gc
+            gc.enable()
+            gc.collect()
             self.n = 0
             self.result.clear()
             self.input_text()
@@ -377,6 +381,9 @@ class MainApp(QMainWindow , ui):
             self.temp = tempfile.TemporaryDirectory(prefix = "rt_isotopic_")
             self.spectrum = pathlib.Path(self.temp.name).as_posix()
             self.message = defaultdict(list)
+            if "mzml" in self.data.keys():
+                if not self.primary_data["use_data"]:
+                    self.launcher = None
             import src
             self.launcher = src.Final(self.primary_data, self.secondary_data, self.optional_data, mass_values, function_values, self.drift, self.spectrum, self.message, self.data)
             self.ccs_table = self.launcher.run()
@@ -390,26 +397,33 @@ class MainApp(QMainWindow , ui):
             self.optional_data = defaultdict(lambda: None)
             show_table = self.ccs_table[['pubchemID', 'compound_name', 'molecular_formula',  'ion_type',  'mz_measured', "Error(PPM)", "#conformer", "drift_time", "ccs",  "resolving_power", "retention_time"]]
             self.write_df_to_qtable(show_table, self.result)
+            print(self.ccs_table)
 
 
 
     def table_deleterow(self):
-        current_row = self.result.currentRow()
-        if current_row < 0:
-            return QMessageBox.warning(self, 'Warning','Please select a record to delete')
+        try:
 
-        button = QMessageBox.question(
-            self,
-            'Confirmation',
-            'Are you sure that you want to delete the selected row?',
-            QMessageBox.StandardButton.Yes |
-            QMessageBox.StandardButton.No
-        )
-        if button == QMessageBox.StandardButton.Yes:
-            self.result.removeRow(current_row)
-            self.ccs_table = self.ccs_table.reset_index(drop = True)
-            self.ccs_table = self.ccs_table.drop(current_row)
-            self.ccs_table = self.ccs_table.reset_index(drop = True)
+            current_row = self.result.currentRow()
+            if current_row < 0:
+                return QMessageBox.warning(self, 'Warning','Please select a record to delete')
+
+            button = QMessageBox.question(
+                self,
+                'Confirmation',
+                'Are you sure that you want to delete the selected row?',
+                QMessageBox.StandardButton.Yes |
+                QMessageBox.StandardButton.No
+            )
+            if button == QMessageBox.StandardButton.Yes:
+                self.result.removeRow(current_row)
+                self.ccs_table = self.ccs_table.reset_index(drop = True)
+                self.ccs_table = self.ccs_table.drop(current_row)
+                self.ccs_table = self.ccs_table.reset_index(drop = True)
+        except Exception as e:
+            print(e)
+
+            pass
 
 
 
@@ -417,179 +431,186 @@ class MainApp(QMainWindow , ui):
 
 
     def table_im(self):
-        row = self.result.currentRow()
-        ff = self.ccs_table.loc[row, 'molecular_formula']
-        ss = self.ccs_table.loc[row, 'rt']
-        ss = str(ss)
-        tt = self.ccs_table.loc[row, 'ion_type']
-        tt = str(tt)
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.drift, f'{ff}_{tt}_{ss}_IM.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+
+            row = self.result.currentRow()
+            ff = self.ccs_table.loc[row, 'molecular_formula']
+            ss = self.ccs_table.loc[row, 'rt']
+            ss = str(ss)
+            tt = self.ccs_table.loc[row, 'ion_type']
+            tt = str(tt)
+            import webbrowser
+            new = 2
+            xx= os.path.join(self.drift, f'{ff}_{tt}_{ss}_IM.html')
+            url = f"file://{xx}"
+            webbrowser.open(url,new=new)
+
+        except Exception as e:
+            print(e)
+            pass
 
 
 
     def table_xic(self):
-        row = self.result.currentRow()
-        ff = self.ccs_table.loc[row, 'molecular_formula']
-        ss = self.ccs_table.loc[row, 'rt']
-        ss = str(ss)
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.drift, f'{ff}_{ss}_IMoverlay.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+
+            row = self.result.currentRow()
+            ff = self.ccs_table.loc[row, 'molecular_formula']
+            ss = self.ccs_table.loc[row, 'rt']
+            ss = str(ss)
+            import webbrowser
+            new = 2
+            xx= os.path.join(self.drift, f'{ff}_{ss}_IMoverlay.html')
+            url = f"file://{xx}"
+            webbrowser.open(url,new=new)
+        except Exception as e:
+            print(e)
+            pass
 
 
     def table_plot3d(self):
-        row = self.result.currentRow()
-        ff = self.ccs_table.loc[row, 'molecular_formula']
-        tt = self.ccs_table.loc[row, 'ion_type']
-        tt = str(tt)
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.spectrum, f'{ff}_{tt}_plot3d.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+
+            row = self.result.currentRow()
+            ff = self.ccs_table.loc[row, 'molecular_formula']
+            tt = self.ccs_table.loc[row, 'ion_type']
+            tt = str(tt)
+            import webbrowser
+            new = 2
+            xx= os.path.join(self.spectrum, f'{ff}_{tt}_plot3d.html')
+            url = f"file://{xx}"
+            webbrowser.open(url,new=new)
+
+        except Exception as e:
+            print(e)
+            pass
 
 
 
     def table_EIC(self):
-        row = self.result.currentRow()
-        ff = self.ccs_table.loc[row, 'molecular_formula']
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.spectrum, f'{ff}_rt_overlay.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+
+            row = self.result.currentRow()
+            ff = self.ccs_table.loc[row, 'molecular_formula']
+            import webbrowser
+            new = 2
+            xx= os.path.join(self.spectrum, f'{ff}_rt_overlay.html')
+            url = f"file://{xx}"
+            webbrowser.open(url,new=new)
+        except Exception as e:
+            print(e)
+            pass
 
 
     def plot_all_rt(self):
-        ll = []
-        xx = self.launcher.all_rt
-        for x in xx:
-            mm = xx[x]
-            mm = mm[mm['ion_type'] == self.primary_data["primary_ion"]]
-            mm = mm[["rt", "intensity"]]
-            mm['molecular_formula'] = x
-            ll.append(mm)
-        df = pd.concat(ll)
-        x = df['rt'].values
-        y = df['intensity'].values
-        f = interpolate.interp1d(x, y, kind = "linear", fill_value = "extrapolate")
-        ynew = f(x)
-        df['intensity'] = ynew
-        fig = px.line(df, x="rt", y="intensity", color='molecular_formula', title=f'overlay_all_rt plot')
-        fig.write_html(os.path.join(self.spectrum, f"all_rt_overlay.html"))
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.spectrum, f'all_rt_overlay.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+            ll = []
+            xx = self.launcher.all_rt
+            if len(xx) > 1:
+                for x in xx:
+                    mm = xx[x]
+                    mm = mm[mm['ion_type'] == self.primary_data["primary_ion"]]
+                    mm = mm[["rt", "intensity"]]
+                    mm['molecular_formula'] = x
+                    ll.append(mm)
+                df = pd.concat(ll)
+                x = df['rt'].values
+                y = df['intensity'].values
+                f = interpolate.interp1d(x, y, kind = "linear", fill_value = "extrapolate")
+                ynew = f(x)
+                df['intensity'] = ynew
+                fig = px.line(df, x="rt", y="intensity", color='molecular_formula', title=f'overlay_all_rt plot')
+                fig.write_html(os.path.join(self.spectrum, f"all_rt_overlay.html"))
+                import webbrowser
+                new = 2
+                xx= os.path.join(self.spectrum, f'all_rt_overlay.html')
+                url = f"file://{xx}"
+                webbrowser.open(url,new=new)
+        except Exception as e:
+            print(e)
+            pass
 
 
     def plot_all_dt(self):
-        ll = []
-        xx = self.launcher.all_dt
-        for x in xx:
-            mm = xx[x]
-            mm = mm[mm['ion_type'] == self.primary_data["primary_ion"]]
-            mm = mm[["drift_time", "intensity", "mf_rt"]]
-            ll.append(mm)
-        df = pd.concat(ll)
-        fig = px.line(df, x="drift_time", y="intensity", color='mf_rt', title=f'overlay_all_dt plot')
-        fig.write_html(os.path.join(self.spectrum, f"all_dt_overlay.html"))
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.spectrum, 'all_dt_overlay.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+            ll = []
+            xx = self.launcher.all_dt
+            if len(xx) > 1:
+                for x in xx:
+                    mm = xx[x]
+                    mm = mm[mm['ion_type'] == self.primary_data["primary_ion"]]
+                    mm = mm[["drift_time", "intensity", "mf_rt"]]
+                    ll.append(mm)
+                df = pd.concat(ll)
+                print(df)
+                fig = px.line(df, x="drift_time", y="intensity", color='mf_rt', title=f'overlay_all_dt plot')
+                fig.write_html(os.path.join(self.spectrum, f"all_dt_overlay.html"))
+                import webbrowser
+                new = 2
+                xx= os.path.join(self.spectrum, 'all_dt_overlay.html')
+                url = f"file://{xx}"
+                webbrowser.open(url,new=new)
+        except Exception as e:
+            print(e)
+            pass
 
 
 
 
 
     def table_spectrum(self):
-        row = self.result.currentRow()
-        ff = self.ccs_table.loc[row, 'molecular_formula']
-        ss = self.ccs_table.loc[row, 'rt']
-        ss = str(ss)
-        tt = self.ccs_table.loc[row, 'ion_type']
-        tt = str(tt)
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.spectrum, f'{ff}_{tt}_{ss}.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+            row = self.result.currentRow()
+            ff = self.ccs_table.loc[row, 'molecular_formula']
+            ss = self.ccs_table.loc[row, 'rt']
+            ss = str(ss)
+            tt = self.ccs_table.loc[row, 'ion_type']
+            tt = str(tt)
+            import webbrowser
+            new = 2
+            xx= os.path.join(self.spectrum, f'{ff}_{tt}_{ss}.html')
+            url = f"file://{xx}"
+            webbrowser.open(url,new=new)
+        except Exception as e:
+            print(e)
+            pass
 
 
 
 
     def view_database(self):
-        import sqlite3
-        con = sqlite3.connect(resource_path("ccs_database.db"))
-        df = pd.read_sql_query("SELECT * from CCS_TABLE", con)
-        outtext2 = os.path.join(self.spectrum, 'cal.html')
-        fish = open(outtext2, 'w+')
-        result = df.to_html()
-        fish.write(result)
-        fish.close()
-        import webbrowser
-        new = 2
-        xx= os.path.join(self.spectrum, 'cal.html')
-        url = f"file://{xx}"
-        webbrowser.open(url,new=new)
+        try:
+
+            import sqlite3
+            con = sqlite3.connect(resource_path("ccs_database.db"))
+            df = pd.read_sql_query("SELECT * from CCS_TABLE", con)
+            outtext2 = os.path.join(self.spectrum, 'cal.html')
+            fish = open(outtext2, 'w+')
+            result = df.to_html()
+            fish.write(result)
+            fish.close()
+            import webbrowser
+            new = 2
+            xx= os.path.join(self.spectrum, 'cal.html')
+            url = f"file://{xx}"
+            webbrowser.open(url,new=new)
+        except Exception as e:
+            print(e)
+            pass
 
 
     def download_result(self):
-        from os.path import expanduser
-        path_text = str(QFileDialog.getExistingDirectory(self, "Select Directory", expanduser("~"), QFileDialog.ShowDirsOnly))
+        try:
 
-        import string
-        import random
-        num = random.choice(string.ascii_letters)
-        path_text = os.path.join(path_text, f"result_{num}")
+            from os.path import expanduser
+            path_text = str(QFileDialog.getExistingDirectory(self, "Select Directory", expanduser("~"), QFileDialog.ShowDirsOnly))
 
-        os.mkdir(path_text)
-        rowCount = self.result.rowCount()
-        columnCount = self.result.columnCount()
-        make_all = []
-        whole = namedtuple('Whole', ['pubchemID', 'compound_name', 'molecular_formula',  'ion_type',  'mz_measured', "Error_PPM", "conformer", "drift_time", "ccs",  "resolving_power", "retention_time"])
-        for row in range(rowCount):
-            rowData = []
-            for column in range(columnCount):
-                widgetItem = self.result.item(row, column)
-                if (widgetItem and widgetItem.text):
-                    rowData.append(widgetItem.text())
-                else:
-                    rowData.append('NULL')
+            import string
+            import random
+            num = random.choice(string.ascii_letters)
+            path_text = os.path.join(path_text, f"result_{num}")
 
-            make_all.append(whole._make(rowData))
-        df = pd.DataFrame(make_all, columns=whole._fields)
-        show_table = self.ccs_table[['pubchemID', 'compound_name', 'molecular_formula',  'ion_type',  'mz_measured', "Error(PPM)", "#conformer", "drift_time", "ccs",  "resolving_power", "retention_time"]]
-        df.to_csv(os.path.join(path_text, 'Results.tab'), sep ='\t')
-        import shutil
-        output = pathlib.Path(self.drift).as_posix()
-        output1 = pathlib.Path(self.spectrum).as_posix()
-        database_path = resource_path("ccs_database.db")
-        shutil.copytree(output, os.path.join(path_text, "drift"))
-        shutil.copytree(output1, os.path.join(path_text, "rt_isotope"))
-        shutil.copy2(database_path, path_text)
-
-# https://stackoverflow.com/questions/50209206/clickable-link-in-pandas-dataframe
-
-    def commit_database(self):
-        button = QMessageBox.question(
-                self,
-                'Confirmation',
-                'Are you sure you typed the pubchemID (only numeric) in the table and want to add current data to the database?',
-                QMessageBox.StandardButton.Yes |
-                QMessageBox.StandardButton.No
-            )
-        if button == QMessageBox.StandardButton.Yes:
-
+            os.mkdir(path_text)
             rowCount = self.result.rowCount()
             columnCount = self.result.columnCount()
             make_all = []
@@ -603,58 +624,110 @@ class MainApp(QMainWindow , ui):
                     else:
                         rowData.append('NULL')
 
-                mm = whole._make(rowData)
-                make_all.append(mm)
+                make_all.append(whole._make(rowData))
             df = pd.DataFrame(make_all, columns=whole._fields)
-            df['mz_measured'] = df['mz_measured'].map(lambda x: float(x))
-            df['Error_PPM'] = df['Error_PPM'].map(lambda x: float(x))
-            df['conformer'] = df['conformer'].map(lambda x: float(x))
-            df['drift_time'] = df['drift_time'].map(lambda x: float(x))
-            df['ccs'] = df['ccs'].map(lambda x: float(x))
-            df['resolving_power'] = df['resolving_power'].map(lambda x: float(x))
-            df["mf_rt"] = df["molecular_formula"] + df["retention_time"].astype(str)
-            df['retention_time'] = df['retention_time'].map(lambda x: float(x))
-            df["pubchemID"] = df["pubchemID"].map(lambda x: f'https://pubchem.ncbi.nlm.nih.gov/compound/{x}')
-            import datetime
-            now = datetime.datetime.now()
-            df["time"] = now
-            conn = sqlite3.connect(resource_path('ccs_database.db'))
-            df.to_sql(name='ccs_table', con=conn, if_exists='append', index=False)
-            ll = []
-            xx = self.launcher.all_rt
-            for x in xx:
-                mm = xx[x]
-                mm['molecular_formula'] = x
-                ll.append(mm)
-            df2 = pd.concat(ll)
-            df2["rt"] = df2["rt"].map(lambda x: float(x)).map(lambda x: round(x, 3))
-            df2["intensity"] = df2["intensity"].map(lambda x: float(x)).map(lambda x: round(x, 3))
-            ll = []
-            xx = self.launcher.all_dt
-            for x in xx.keys():
-                mm = xx[x]
-                ll.append(mm)
-            df3 = pd.concat(ll)
-            df3["rt"] = df3["rt"].map(lambda x: float(x)).map(lambda x: round(x, 3))
-            df3["intensity"] = df3["intensity"].map(lambda x: float(x)).map(lambda x: round(x, 3))
-            df3["drift_time"] = df3["drift_time"].map(lambda x: float(x)).map(lambda x: round(x, 3))
-            df3["mf_rt"] = df3["molecular_formula"].astype(str) + df3["rt"].astype(str)
-            df2 = df2[df2["molecular_formula"].isin(df["molecular_formula"])]
-            import datetime
-            now = datetime.datetime.now()
-            df2 = df2[["molecular_formula", "rt", "ion_type", "intensity"]]
-            df3 = df3[["molecular_formula", "rt", "ion_type", "intensity", "drift_time", "mf_rt"]]
-            df2["time"] = now
-            df3["time"] = now
-            xx = self.lq.information["method"]
-            yy = self.lq.information["comments"]
-            df4 = pd.DataFrame({"Analytical_Method": xx, "Comments": yy, "time": now}, index = [0])
-            df2.to_sql(name='EIC_spectra', con=conn, if_exists='append', index=False)
-            df3.to_sql(name='DT_spectra', con=conn, if_exists='append', index=False)
-            df4.to_sql(name='Analytical_Method', con=conn, if_exists='append', index=False)
+            show_table = self.ccs_table[['pubchemID', 'compound_name', 'molecular_formula',  'ion_type',  'mz_measured', "Error(PPM)", "#conformer", "drift_time", "ccs",  "resolving_power", "retention_time"]]
+            df.to_csv(os.path.join(path_text, 'Results.tab'), sep ='\t')
+            import shutil
+            output = pathlib.Path(self.drift).as_posix()
+            output1 = pathlib.Path(self.spectrum).as_posix()
+            database_path = resource_path("ccs_database.db")
+            shutil.copytree(output, os.path.join(path_text, "drift"))
+            shutil.copytree(output1, os.path.join(path_text, "rt_isotope"))
+            shutil.copy2(database_path, path_text)
+        except Exception as e:
+            print(e)
+            pass
 
+# https://stackoverflow.com/questions/50209206/clickable-link-in-pandas-dataframe
 
+    def commit_database(self):
+        try:
 
+            button = QMessageBox.question(
+                    self,
+                    'Confirmation',
+                    'Are you sure you typed the pubchemID (only numeric) in the table and want to add current data to the database?',
+                    QMessageBox.StandardButton.Yes |
+                    QMessageBox.StandardButton.No
+                )
+            if button == QMessageBox.StandardButton.Yes:
+
+                rowCount = self.result.rowCount()
+                columnCount = self.result.columnCount()
+                make_all = []
+                whole = namedtuple('Whole', ['pubchemID', 'compound_name', 'molecular_formula',  'ion_type',  'mz_measured', "Error_PPM", "conformer", "drift_time", "ccs",  "resolving_power", "retention_time"])
+                for row in range(rowCount):
+                    rowData = []
+                    for column in range(columnCount):
+                        widgetItem = self.result.item(row, column)
+                        if (widgetItem and widgetItem.text):
+                            rowData.append(widgetItem.text())
+                        else:
+                            rowData.append('NULL')
+
+                    mm = whole._make(rowData)
+                    make_all.append(mm)
+                df = pd.DataFrame(make_all, columns=whole._fields)
+                df['mz_measured'] = df['mz_measured'].map(lambda x: float(x))
+                df['Error_PPM'] = df['Error_PPM'].map(lambda x: float(x))
+                df['conformer'] = df['conformer'].map(lambda x: float(x))
+                df['drift_time'] = df['drift_time'].map(lambda x: float(x))
+                df['ccs'] = df['ccs'].map(lambda x: float(x))
+                df['resolving_power'] = df['resolving_power'].map(lambda x: float(x))
+                df["mf_rt"] = df["molecular_formula"] + df["retention_time"].astype(str)
+                df['retention_time'] = df['retention_time'].map(lambda x: float(x))
+                df["pubchemID"] = df["pubchemID"].map(lambda x: f'https://pubchem.ncbi.nlm.nih.gov/compound/{x}')
+                import datetime
+                now = datetime.datetime.now()
+                df["time"] = now
+                conn = sqlite3.connect(resource_path('ccs_database.db'))
+                df.to_sql(name='ccs_table', con=conn, if_exists='append', index=False)
+                ll = []
+                xx = self.launcher.all_rt
+                for x in xx:
+                    mm = xx[x]
+                    mm['molecular_formula'] = x
+                    ll.append(mm)
+                df2 = pd.concat(ll)
+                df2["rt"] = df2["rt"].map(lambda x: float(x)).map(lambda x: round(x, 3))
+                df2["intensity"] = df2["intensity"].map(lambda x: float(x)).map(lambda x: round(x, 3))
+                ll = []
+                xx = self.launcher.all_dt
+                for x in xx.keys():
+                    mm = xx[x]
+                    ll.append(mm)
+                df3 = pd.concat(ll)
+                df3["rt"] = df3["rt"].map(lambda x: float(x)).map(lambda x: round(x, 3))
+                df3["intensity"] = df3["intensity"].map(lambda x: float(x)).map(lambda x: round(x, 3))
+                df3["drift_time"] = df3["drift_time"].map(lambda x: float(x)).map(lambda x: round(x, 3))
+                df3["mf_rt"] = df3["molecular_formula"].astype(str) + df3["rt"].astype(str)
+                df2 = df2[df2["molecular_formula"].isin(df["molecular_formula"])]
+                import datetime
+                now = datetime.datetime.now()
+                df2 = df2[["molecular_formula", "rt", "ion_type", "intensity"]]
+                df3 = df3[["molecular_formula", "rt", "ion_type", "intensity", "drift_time", "mf_rt"]]
+                df2["time"] = now
+                df3["time"] = now
+                print(self.lq.information)
+                xx = self.lq.information["method"]
+                yy = self.lq.information["comments"]
+                x1 = self.lq.information["field_strength"]
+                x2 = self.lq.information["drift_tube_pressure"]
+                x3 = self.lq.information["drift_tube_temperature"]
+                x4 = self.lq.information["LC_method_number"]
+                x5 = self.lq.information["processing_applied"]
+                zz = self.primary_data["drift_gas"]
+                kk = float(self.primary_data["beta"])
+                gg = float(self.primary_data["tfix"])
+
+                df4 = pd.DataFrame({"Analytical_Method": xx, "Comments": yy, "drift_gas": zz, "beta_slope": kk, "tfix_intercept": gg, "Field_strength_V_cm": x1, "Drift_tube_pressure_Pa": x2, "Drift_tube_temperature_Kelvin": x3, "LC_method_number": x4, "processing_applied_hrDM": x5, "time": now}, index = [0])
+                df2.to_sql(name='EIC_spectra', con=conn, if_exists='append', index=False)
+                df3.to_sql(name='DT_spectra', con=conn, if_exists='append', index=False)
+                df4.to_sql(name='Analytical_Method', con=conn, if_exists='append', index=False)
+        except Exception as e:
+            print(e)
+            pass
 
 
 def main():

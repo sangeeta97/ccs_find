@@ -59,6 +59,11 @@ class Advanced(QWidget):
       self.widgets()
       self.method.textEdited.connect(lambda x: self.onTextEdited(self.method, "method"))
       self.comments.textEdited.connect(lambda x: self.onTextEdited(self.comments, "comments"))
+      self.c1.textEdited.connect(lambda x: self.onTextEdited(self.c1, "field_strength"))
+      self.c2.textEdited.connect(lambda x: self.onTextEdited(self.c2, "drift_tube_pressure"))
+      self.c3.textEdited.connect(lambda x: self.onTextEdited(self.c3, "drift_tube_temperature"))
+      self.c4.textEdited.connect(lambda x: self.onTextEdited(self.c4, "LC_method_number"))
+      self.c5.textEdited.connect(lambda x: self.onTextEdited(self.c5, "processing_applied"))
 
 
 
@@ -77,8 +82,28 @@ class Advanced(QWidget):
         self.mainLayout=QVBoxLayout()
         self.bottomLayout=QFormLayout()
         self.bottomLayout.addWidget(self.titleText)
+        self.c1=QLineEdit()
+        self.c1.setText("")
+        self.c1.resize(QSize(300, 30))
+        self.c2=QLineEdit()
+        self.c2.setText("")
+        self.c2.resize(QSize(300, 30))
+        self.c3=QLineEdit()
+        self.c3.setText("")
+        self.c3.resize(QSize(300, 30))
+        self.c4=QLineEdit()
+        self.c4.setText("")
+        self.c4.resize(QSize(300, 30))
+        self.c5=QLineEdit()
+        self.c5.setText("")
+        self.c5.resize(QSize(300, 30))
         self.bottomLayout.addRow(QLabel("Analytical Method: "),self.method)
         self.bottomLayout.addRow(QLabel("Comments: "),self.comments)
+        self.bottomLayout.addRow(QLabel("Field strength (V/cm): "),self.c1)
+        self.bottomLayout.addRow(QLabel("Drift tube pressure (Pa) : "),self.c2)
+        self.bottomLayout.addRow(QLabel("Drift tube temperature (Kelvin): "),self.c3)
+        self.bottomLayout.addRow(QLabel("LC method number: "),self.c4)
+        self.bottomLayout.addRow(QLabel("Level of processing applied (e.g., hrDM) : "),self.c5)
         self.bottomLayout.addRow(QLabel(""),self.submit)
         self.bottomLayout.addRow(QLabel(""),self.cancel)
         self.mainLayout.addLayout(self.bottomLayout)
@@ -105,17 +130,19 @@ class Advanced(QWidget):
     def nothing(self):
         self.method.setText("")
         self.comments.setText("")
+        self.c1.setText("")
+        self.c2.setText("")
+        self.c3.setText("")
+        self.c4.setText("")
+        self.c5.setText("")
 
 
 
     def onTextEdited(self, x, y):
         try:
             if x:
-                if y == "method":
-                    yy = x.text()
-                    self.information[y] = yy
-                elif y == "comments":
-                    yy = x.text()
-                    self.information[y] = yy
+                yy = x.text()
+                self.information[y] = yy
+
         except:
             pass

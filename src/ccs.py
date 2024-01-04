@@ -3,16 +3,6 @@ import pandas as pd
 import math
 import numpy as np
 
-mg = 28.006148
-#
-# tfix = 0.428379630615936
-#
-# beta = 0.13581225201424416
-
-
-# DriftGas mass="28.006148">N2</DriftGas>
-# <TFix>0.428379630615936</TFix>
-# <Beta>0.13581225201424416<
 
 
 # Mass of the drift gas (mg) required. Default is N2 = 28.01 g/mol
@@ -26,26 +16,6 @@ mg = 28.006148
 # [(tA – tfix)*(z/beta*gamma) = DTCCSN2
 
 
-#primary_ion
-#drift_gas
-#formula
-#mzml
-#calibration
-#beta
-#tfix
-#buffer_text
-
-def calculate(row,  tfix, beta, mg = mg):
-    mi = row['mz_measured']
-    tA = row['drift_time']
-    m = mg + mi
-    inter_mi = np.divide(mi, m)
-    gamma = math.sqrt(inter_mi)
-    diff = tA - tfix
-    b = beta * gamma
-    b = np.divide(1, b)
-    ccs = diff * b
-    return ccs
 
 
 class CCS:
@@ -54,7 +24,17 @@ class CCS:
         self.drift_result = drift_result
         self.tfix = float(self.data.primary_data["tfix"])
         self.beta = float(self.data.primary_data["beta"])
-        self.mg = 28.006148
+        self.mgn = self.data.primary_data["drift_gas"]
+        if self.mgn == "Nitrogen":
+            self.mg = 28.006148
+        elif self.mgn == "Helium":
+            self.mg = 4.0026
+        elif self.mgn == "Argon":
+            self.mg = 39.96238312
+        else:
+            self.mg = 28.006148
+
+
 
 
 
