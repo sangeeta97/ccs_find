@@ -1,34 +1,33 @@
 # ccs_find
-The most recent and up-to date ( Feb 2024).
-We introduce CCSfind, a new tool for building of comprehensive databases from experimental IM-MS measurements of small molecules. 
+The most recent and up-to date version (February 2024).
+We introduce **CCSfind**, a new tool for building of comprehensive databases from experimental LC-IM-MS measurements of small molecules. 
 CCSfind allows predicted ion species to be chosen for input chemical formulae.
-The tool uses a mzML input files to provide a unified set of results within a single data processing step which includes filtering using isotopic confirmation after peak picking.
-CCSfind can handle both chromatographically separated isomers and IM separation of isomeric ions (e.g., “protomers” or conformers of the same ion species) with 
-simple user control over the output for new database entries in SQL format. 
+The tool uses a mzML input files to provide a unified set of results within a single data processing step which includes filtering using isotopologue matching confirmation after peak picking.
+CCSfind can handle both chromatographically separated isomers and IM separation of isomeric ions (e.g., “protomers” or conformers of the same ion species) with simple user control over the output for new database entries in SQL format. 
 
-# Compulsory Input
+# Compulsory input
 
-* Then the program needs compulsory 5 inputs to start the analysis.
-* A profile mzml input file
-* A list of molecular formulas to be screened in the mzml file
-* The Tfix and Beta values of calibration of the experimental analysis
-* The nature of gas
-* The primary ion for screening (either positive or negative primary ion)
-
-
-
-# Optional or additional inputs
-
-* support for screening of additional adducts ions including both positive and negative modes
-* Option to select mass screening window for isotopic ions confirmation (A, A+1, A+2)
-* Option to select the expected peakwidth of the peak 
-* Option to selct abundance of the peak (noisy or well-defined peak)
-* Option to rerun the analysis faster for already loaded mzml file with different setting or new molecular formulas
-* Option to search for multiple charged ions
+* The program needs 5 compulsary inputs.
+* A profile data mzML input file from LC-DTIM-MS.
+* A list of molecular formulae to be searched for in the mzML file.
+* The single-field CCS calibration coefficients (Tfix and Beta) for the data file considered.
+* The identity of the drift gas (e.g., nitrogen).
+* The primary ion species to be searched for.
 
 
 
-## Commandline Tool and create environment using conda (for pip use instructions below)
+# Additional features
+
+* Supports screening of additional adducts ions for both positive and negative modes.
+* Option to adjust mass extraction window for isotopologue ion confirmation (A, A+1, A+2).
+* Option to adjust the expected LC peak width.
+* Option to adjust the expected abundance of the peak (noisy or well-defined peak).
+* Option to re-run the analysis faster for an already loaded (parsed) mzML file with different settings or additional molecular formulae.
+* Option to search for multiply charged ions.
+
+
+
+## Command line tool and create environment using conda (for pip use instructions below)
 
 ```
 conda create --name <env> python=3.9
@@ -68,7 +67,7 @@ ccs_find.exe
 # How to use it
 
 
-* To use it as GUI tool; Please on your terminal and follow the instructions.
+* To use it as GUI tool; install on your terminal and follow the instructions.
 ```
 python gui.py
 ```
