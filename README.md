@@ -1,4 +1,4 @@
-# ccs_find
+# CCSfind
 The most recent and up-to date version (February 2024).
 We introduce **CCSfind**, a new tool for building of comprehensive databases from experimental LC-IM-MS measurements of small molecules. 
 CCSfind allows predicted ion species to be chosen for input chemical formulae.
