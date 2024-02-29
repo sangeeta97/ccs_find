@@ -65,7 +65,7 @@ def parse_arguments():
                         metavar = "config .ini file with parameters",
                         default = None,
                         required = True,
-                        help = """config .ini file with all the parameters (optional)""")
+                        help = """config .ini file with all the parameters""")
     args = parser.parse_args()
 
     try:
