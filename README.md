@@ -40,7 +40,7 @@ python processor.py
      optional arguments:
       -h, --help            show this help message and exit
       --cmd                 activates the command-line interface
-      -g                   config.ini file with all the options (refer to config.ini file)
+      -g                   config.ini file with all the options (refer to config.ini file) (required)
 
 ```
 ## Generating an executable
