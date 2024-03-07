@@ -27,7 +27,7 @@ CCSfind can handle both chromatographically separated isomers and IM separation 
 
 
 
-## Command line tool and create environment using conda (for pip use instructions below)
+## Command line tool and create environment using conda (for pip use instructions below), python 3.9 is a must.
 
 ```
 conda create --name <env> python=3.9
