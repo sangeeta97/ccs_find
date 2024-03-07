@@ -163,23 +163,24 @@ class Calculation:
                     mz = mz_tuple[0]
                     rt = mz_tuple[1]
                     intensity = mz_tuple[2]
-                    noise = estimate_noise(intensity)
-                    baseline = estimate_baseline(intensity, noise)
-                    start, peaks, end = detect_peaks(intensity, noise, baseline, self.noise)
-                    peak_intensities  = np.array([intensity[x] for x in peaks])
-                    max_intensity = max(peak_intensities)
-                    peaks_index = peak_intensities > max_intensity/3
-                    peaks = peaks[peaks_index]
-                    start = start[peaks_index]
-                    end = end[peaks_index]
-                    rt = rt[peaks]
-                    label = self.molecular_formula + str(rtE)
-                    self.ions_data[label][ion] = lt
-                    df = self.peak_dt(lt, ion, rt, mz, rtE)
-                    if self.peaks:
+                    if not isinstance(intensity, type(None)):
+                        noise = estimate_noise(intensity)
+                        baseline = estimate_baseline(intensity, noise)
+                        start, peaks, end = detect_peaks(intensity, noise, baseline, self.noise)
+                        peak_intensities  = np.array([intensity[x] for x in peaks])
+                        max_intensity = max(peak_intensities)
+                        peaks_index = peak_intensities > max_intensity/3
+                        peaks = peaks[peaks_index]
+                        start = start[peaks_index]
+                        end = end[peaks_index]
+                        rt = rt[peaks]
                         label = self.molecular_formula + str(rtE)
-                        self.rt_found_ion[label].append(ion)
-                        lc.append(df)
+                        self.ions_data[label][ion] = lt
+                        df = self.peak_dt(lt, ion, rt, mz, rtE)
+                        if self.peaks:
+                            label = self.molecular_formula + str(rtE)
+                            self.rt_found_ion[label].append(ion)
+                            lc.append(df)
 
             if len(lc) > 0:
                 dd = pd.DataFrame()
