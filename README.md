@@ -58,7 +58,7 @@ python gui.py
 
 ```
 
-or install packages individually name-wise.
+or download the codes as zip and unpack them and cd into the ccs_find folder and install packages individually name-wise or using requirements.txt
 
 ```
 pip install polars XlsxWriter xlrd numpy pandas pyarrow PyQt5 molmass matplotlib plotly lxml bokeh biosaur2 scipy
