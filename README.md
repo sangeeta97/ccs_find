@@ -51,6 +51,15 @@ Using [PyInstaller](http://www.pyinstaller.org) is recommended. You should first
 conda config --prepend channels conda-forge
 conda create --name ccs_find  python=3.9
 conda activate ccs_find
+git clone https://github.com/sangeeta97/ccs_find.git
+cd ccs_find
+pip install -r requirements.txt
+
+```
+
+or install packages individually name-wise.
+
+```
 pip install polars XlsxWriter xlrd numpy pandas pyarrow PyQt5 molmass matplotlib plotly lxml bokeh biosaur2 scipy
 git clone https://github.com/sangeeta97/ccs_find.git
 cd ccs_find
