@@ -54,6 +54,7 @@ conda activate ccs_find
 git clone https://github.com/sangeeta97/ccs_find.git
 cd ccs_find
 pip install -r requirements.txt
+python gui.py
 
 ```
 
@@ -61,8 +62,7 @@ or install packages individually name-wise.
 
 ```
 pip install polars XlsxWriter xlrd numpy pandas pyarrow PyQt5 molmass matplotlib plotly lxml bokeh biosaur2 scipy
-git clone https://github.com/sangeeta97/ccs_find.git
-cd ccs_find
+python gui.py
 pyinstaller ccs.spec
 
 ```
