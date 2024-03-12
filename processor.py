@@ -46,6 +46,7 @@ def parse_arguments():
         print(dictall)
         molecular_formula = dictall['molecular_formula']
         molecular_formula = [m for m in molecular_formula.split()]
+        molecular_formula = [m.strip() for m in molecular_formula]
         xml_file = dictall['mzmlfile_path']
         primary_ion = dictall['primary_ion']
         drift_gas = dictall['gas']
