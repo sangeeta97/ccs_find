@@ -95,3 +95,13 @@ exe = EXE(pyz,
          runtime_tmpdir=None,
          console=False,
          icon='icon/ccs_logo.ico' )
+
+
+coll = COLLECT(exe,
+              a.binaries,
+              a.zipfiles,
+              a.datas,
+              strip=False,
+              upx=True,
+              upx_exclude=[],
+              name='CCS_find')
