@@ -1,5 +1,6 @@
 """
 functions and objects used to detect peaks.
+The peak picking below code has been obtained from tidyms package (https://github.com/griquelme/tidyms). 
 Objects
 -------
 - Peak : Stores peak location and extension. Computes peak parameters.
