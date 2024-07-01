@@ -1,6 +1,8 @@
 """
 
-##The peak picking below code has been obtained from tidyms package (https://github.com/griquelme/tidyms). 
+The peak picking below code has been obtained from tidyms package (https://github.com/griquelme/tidyms). 
+
+
 functions and objects used to detect peaks.
 Objects
 -------
