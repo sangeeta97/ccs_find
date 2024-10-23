@@ -38,7 +38,7 @@ def parse_arguments():
     if args.config_file:
         dictall = {}
         config = configparser.ConfigParser()
-        config.read('config.ini')
+        config.read(args.config_file)
         cc = config.sections()
         optional_data = defaultdict(lambda: None)
         for c in cc:
