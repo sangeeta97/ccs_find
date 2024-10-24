@@ -1,6 +1,6 @@
 # CCSfind
 The most recent and up-to date version (February 2024).
-We introduce **CCSfind**, a new tool for building of comprehensive databases from experimental LC-IM-MS measurements (drift tube IM-MS data) of small molecules. 
+We introduce **CCSfind**, a new tool for building of comprehensive databases from experimental LC-IM-MS measurements (**drift tube IM-MS data**) of small molecules. 
 CCSfind allows predicted ion species to be chosen for input chemical formulae.
 The tool uses a mzML input files to provide a unified set of results within a single data processing step which includes filtering using isotopologue matching confirmation after peak picking.
 CCSfind can handle both chromatographically separated isomers and IM separation of isomeric ions (e.g., “protomers” or conformers of the same ion species) with simple user control over the output for new database entries in SQL format. 
