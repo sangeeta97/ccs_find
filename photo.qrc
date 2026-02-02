@@ -1,0 +1,17 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>icon/3Dplot.jpg</file>
+    <file>icon/ccs.jpg</file>
+    <file>icon/ccs_logo.ico</file>
+    <file>icon/delete.jpg</file>
+    <file>icon/download.png</file>
+    <file>icon/match.png</file>
+    <file>icon/plot.png</file>
+    <file>icon/plot2.jpg</file>
+    <file>icon/upload2.png</file>
+    <file>icon/view.png</file>
+    <file>icon/database.jpg</file>
+    <file>icon/lab.png</file>
+  </qresource>
+  <qresource prefix="newPrefix"/>
+</RCC>
